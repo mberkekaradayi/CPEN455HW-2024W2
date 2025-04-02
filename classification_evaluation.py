@@ -24,8 +24,13 @@ NUM_CLASSES = len(my_bidict)
 def get_label(model, model_input, device):
     # Write your code here, replace the random classifier with your trained model
     # and return the predicted label, which is a tensor of shape (batch_size,)
-    answer = model(model_input, device)
-    return answer
+    with torch.no_grad():
+        output = model(model_input, sample=False)
+        # The output is a tensor of shape (batch_size, num_mix * nr_logistic_mix)
+        # We need to get the predicted class
+        # For classification, we'll use the first component of the mixture
+        predicted = torch.argmax(output[:, :NUM_CLASSES], dim=1)
+    return predicted
 # End of your code
 
 def classifier(model, data_loader, device):
@@ -68,7 +73,7 @@ if __name__ == '__main__':
 
     #TODO:Begin of your code
     #You should replace the random classifier with your trained model
-    model = random_classifier(NUM_CLASSES)
+    model = PixelCNN(nr_resnet=5, nr_filters=80, nr_logistic_mix=10, input_channels=3)
     #End of your code
     
     model = model.to(device)
