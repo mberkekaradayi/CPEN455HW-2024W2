@@ -21,19 +21,19 @@ import argparse
 # This is a demonstration of how to call the sample function, feel free to modify it
 # You should modify this sample function to get the generated images from your model
 # You should save the generated images to the gen_data_dir, which is fixed as 'samples'
-sample_op = lambda x : sample_from_discretized_mix_logistic(x, 5)
+sample_op = lambda x : sample_from_discretized_mix_logistic(x, 10)
 def my_sample(model, gen_data_dir, sample_batch_size = 25, obs = (3,32,32), sample_op = sample_op):
-    model.eval()
-    with torch.no_grad():
-        for label in my_bidict:
-            print(f"Generating images for label: {label}")
-            # Create a batch of label tensors
-            labels = torch.full((sample_batch_size,), label, dtype=torch.long, device=model.device)
-            # Generate images for this label
-            sample_t = sample(model, sample_batch_size, obs, sample_op)
-            sample_t = rescaling_inv(sample_t)
-            # Save the generated images
-            save_images(sample_t, os.path.join(gen_data_dir), label=label)
+
+    for label in my_bidict:
+        print(f"Generating images for label: {label}")
+        #generate images for each label, each label has 25 images
+        class_tensor = [label] * sample_batch_size
+
+        sample_t = sample(model, sample_batch_size, obs, sample_op, labels=class_tensor)
+        sample_t = rescaling_inv(sample_t)
+        save_images(sample_t, os.path.join(gen_data_dir), label=label)
+
+    pass
 # End of your code
 
 if __name__ == "__main__":
@@ -53,9 +53,9 @@ if __name__ == "__main__":
 
     #TODO: Begin of your code
     #Load your model and generate images in the gen_data_dir, feel free to modify the model
-    model = PixelCNN(nr_resnet=5, nr_filters=80, nr_logistic_mix=10, input_channels=3)
+    model = PixelCNN(nr_resnet = 1, nr_filters=40, input_channels=3, nr_logistic_mix=5)
+    model.load_state_dict(torch.load('models/conditional_pixelcnn.pth'))
     model = model.to(device)
-    model.device = device  # Store device for use in my_sample
     model = model.eval()
     #End of your code
     

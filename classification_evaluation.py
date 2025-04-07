@@ -22,16 +22,30 @@ NUM_CLASSES = len(my_bidict)
 
 #TODO: Begin of your code
 def get_label(model, model_input, device):
-    # Write your code here, replace the random classifier with your trained model
-    # and return the predicted label, which is a tensor of shape (batch_size,)
-    with torch.no_grad():
-        output = model(model_input, sample=False)
-        # The output is a tensor of shape (batch_size, num_mix * nr_logistic_mix)
-        # We need to get the predicted class
-        # For classification, we'll use the first component of the mixture
-        predicted = torch.argmax(output[:, :NUM_CLASSES], dim=1)
-    return predicted
-# End of your code
+    # Track minimum loss and corresponding class for each image
+    batch_size, _, _, _ = model_input.size()
+    min_losses = [float('inf')] * batch_size  # Initialize with maximum possible loss
+    predicted_classes = [0] * batch_size  # Initialize predicted classes
+    class_names = ['Class0', 'Class1', 'Class2', 'Class3']
+
+    # Evaluate each possible class
+    for class_idx in range(NUM_CLASSES):
+        # Create batch of identical class labels
+        class_labels = [class_names[class_idx]] * batch_size
+        
+        # Get model output and compute loss for this class
+        model_output = model(model_input, labels=class_labels)
+        class_loss = discretized_mix_logistic_loss(model_input, model_output)  # noqa: F405
+
+        # Update predictions if this class has lower loss
+        for img_idx in range(batch_size):
+            if class_loss[img_idx] < min_losses[img_idx]:
+                min_losses[img_idx] = class_loss[img_idx]
+                predicted_classes[img_idx] = class_idx
+
+    # Convert predictions to tensor and move to correct device
+    predicted_classes = torch.tensor(predicted_classes).to(device)
+    return predicted_classes
 
 def classifier(model, data_loader, device):
     model.eval()
@@ -73,7 +87,7 @@ if __name__ == '__main__':
 
     #TODO:Begin of your code
     #You should replace the random classifier with your trained model
-    model = PixelCNN(nr_resnet=5, nr_filters=80, nr_logistic_mix=10, input_channels=3)
+    model = PixelCNN(nr_resnet=1, nr_filters=40, input_channels=3, nr_logistic_mix=5)
     #End of your code
     
     model = model.to(device)
