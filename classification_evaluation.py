@@ -21,11 +21,7 @@ import csv
 NUM_CLASSES = len(my_bidict)
 
 #TODO: Begin of your code
-all_results = []
-
-def get_label(model, model_input, device, batch_idx):
-
-    save_loss = True
+def get_label(model, model_input, device):
     batch_size,_,_,_ = model_input.size()
     min_losses = [float('inf')] * batch_size 
     result = [0] * batch_size
@@ -33,16 +29,19 @@ def get_label(model, model_input, device, batch_idx):
 
     for class_num in range(NUM_CLASSES):
       
-      class_tensor = [class_names[class_num]] * batch_size
-      output = model(model_input, labels=class_tensor)
-      loss = discretized_mix_logistic_loss(model_input, output)
+      # Create a batch of identical class labels
+      label_batch = [class_names[class_num]] * batch_size
+      # Get model predictions and calculate loss for this class
+      predictions = model(model_input, labels=label_batch)
+      calculated_loss = discretized_mix_logistic_loss(model_input, predictions)
 
       # Update minimum losses for each image
       for i in range(batch_size):
-        if loss[i] < min_losses[i]:
-          min_losses[i] = loss[i]
+        if calculated_loss[i] < min_losses[i]:
+          min_losses[i] = calculated_loss[i]
           result[i] = class_num
 
+    # Convert the result to a tensor and move to the specified device
     result = torch.tensor(result).to(device)
     return result
 # End of your code
