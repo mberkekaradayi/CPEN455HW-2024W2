@@ -21,31 +21,31 @@ import csv
 NUM_CLASSES = len(my_bidict)
 
 #TODO: Begin of your code
-def get_label(model, model_input, device):
-    # Track minimum loss and corresponding class for each image
-    batch_size, _, _, _ = model_input.size()
-    min_losses = [float('inf')] * batch_size  # Initialize with maximum possible loss
-    predicted_classes = [0] * batch_size  # Initialize predicted classes
-    class_names = ['Class0', 'Class1', 'Class2', 'Class3']
+all_results = []
 
-    # Evaluate each possible class
-    for class_idx in range(NUM_CLASSES):
-        # Create batch of identical class labels
-        class_labels = [class_names[class_idx]] * batch_size
-        
-        # Get model output and compute loss for this class
-        model_output = model(model_input, labels=class_labels)
-        class_loss = discretized_mix_logistic_loss(model_input, model_output)  # noqa: F405
+def get_label(model, model_input, device, batch_idx):
 
-        # Update predictions if this class has lower loss
-        for img_idx in range(batch_size):
-            if class_loss[img_idx] < min_losses[img_idx]:
-                min_losses[img_idx] = class_loss[img_idx]
-                predicted_classes[img_idx] = class_idx
+    save_loss = True
+    batch_size,_,_,_ = model_input.size()
+    min_losses = [float('inf')] * batch_size 
+    result = [0] * batch_size
+    class_names = ['Class0','Class1','Class2','Class3']
 
-    # Convert predictions to tensor and move to correct device
-    predicted_classes = torch.tensor(predicted_classes).to(device)
-    return predicted_classes
+    for class_num in range(NUM_CLASSES):
+      
+      class_tensor = [class_names[class_num]] * batch_size
+      output = model(model_input, labels=class_tensor)
+      loss = discretized_mix_logistic_loss(model_input, output)
+
+      # Update minimum losses for each image
+      for i in range(batch_size):
+        if loss[i] < min_losses[i]:
+          min_losses[i] = loss[i]
+          result[i] = class_num
+
+    result = torch.tensor(result).to(device)
+    return result
+# End of your code
 
 def classifier(model, data_loader, device):
     model.eval()
