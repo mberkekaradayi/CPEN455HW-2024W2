@@ -25,6 +25,7 @@ def get_label(model, model_input, device):
     batch_size,_,_,_ = model_input.size()
     min_losses = [float('inf')] * batch_size 
     result = [0] * batch_size
+    # Class names for mapping
     class_names = ['Class0','Class1','Class2','Class3']
 
     for class_num in range(NUM_CLASSES):
@@ -33,15 +34,15 @@ def get_label(model, model_input, device):
       label_batch = [class_names[class_num]] * batch_size
       # Get model predictions and calculate loss for this class
       predictions = model(model_input, labels=label_batch)
-      calculated_loss = discretized_mix_logistic_loss(model_input, predictions)
+      loss = discretized_mix_logistic_loss(model_input, predictions)
 
       # Update minimum losses for each image
       for i in range(batch_size):
-        if calculated_loss.item() < min_losses[i]:
-          min_losses[i] = calculated_loss.item()
+        if loss[i] < min_losses[i]:
+          min_losses[i] = loss[i]
           result[i] = class_num
 
-    # Convert the result to a tensor and move to the specified device
+    # Convert and return the result
     result = torch.tensor(result).to(device)
     return result
 # End of your code

@@ -59,6 +59,7 @@ class PixelCNN(nn.Module):
         else :
             raise Exception('right now only concat elu is supported as resnet nonlinearity.')
 
+        # Embedding layer for labels
         num_labels = 4
         embedding_dim = 32*32*3
         self.embedding = nn.Embedding(num_labels, embedding_dim)

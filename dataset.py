@@ -13,6 +13,7 @@ rescaling     = lambda x : (x - .5) * 2.
 rescaling_inv = lambda x : .5 * x  + .5
 replicate_color_channel = lambda x : x.repeat(3,1,1)
 
+# Bidirectional dictionary for mapping labels to numeric values and vice versa
 my_bidict = bidict({'Class0': 0, 
                     'Class1': 1,
                     'Class2': 2,

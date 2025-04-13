@@ -173,7 +173,7 @@ def right_shift(x, pad=None):
     pad = nn.ZeroPad2d((1, 0, 0, 0)) if pad is None else pad
     return pad(x)
 
-
+# Sample function for generating images - add labels to the model
 def sample(model, sample_batch_size, obs, sample_op, labels=None):
     model.train(False)
     with torch.no_grad():
