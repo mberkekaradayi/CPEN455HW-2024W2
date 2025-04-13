@@ -37,8 +37,8 @@ def get_label(model, model_input, device):
 
       # Update minimum losses for each image
       for i in range(batch_size):
-        if calculated_loss[i] < min_losses[i]:
-          min_losses[i] = calculated_loss[i]
+        if calculated_loss.item() < min_losses[i]:
+          min_losses[i] = calculated_loss.item()
           result[i] = class_num
 
     # Convert the result to a tensor and move to the specified device
